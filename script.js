@@ -1,3 +1,9 @@
+const usuario = localStorage.getItem("usuarioLogado");
+
+if (!usuario) {
+  window.location.href = "login.html";
+}
+
 const API_URL = "https://script.google.com/macros/s/AKfycbzpXOu4KBjYGepFPv0aDVe0Sc48RH2941jDVDF3xfA_L5l6RnbHpITeTqjoAflwb3lHvA/exec";
 
 function registrarNota() {
