@@ -1,23 +1,29 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+    <link rel="stylesheet" href="login.css">
 <head>
   <meta charset="UTF-8">
-  <title>Login | NF Grandes Redes</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Login - NF Grandes Redes</title>
+
 </head>
 <body>
 
-<div class="container">
-  <h2>Acesso ao Sistema</h2>
+  <div class="topo">
+    <h1>NF <span>GRANDES REDES</span></h1>
+  </div>
 
-  <input type="text" id="usuario" placeholder="Usuário">
-  <input type="password" id="senha" placeholder="Senha">
+  <div class="login-container">
+    <h2>Acesso ao sistema</h2>
 
-  <button onclick="login()">Entrar</button>
+    <input type="text" id="usuario" placeholder="Usuário">
+    <input type="password" id="senha" placeholder="Senha">
 
-  <p id="msg"></p>
-</div>
+    <button onclick="login()">Entrar</button>
 
-<script src="login.js"></script>
+    <p id="msg"></p>
+  </div>
+
+  <script src="login.js"></script>
 </body>
+
 </html>

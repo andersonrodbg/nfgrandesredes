@@ -14,12 +14,18 @@
 </header>
 
 
+
+  <div id="resultado" class="resultado"></div>
+</div>
+
 <body>
 
 <div class="container">
   <input type="text" id="usuario" placeholder="Usuário">
   <input type="date" id="dataFaturamento">
   <input type="text" id="nota" placeholder="Número da nota">
+  <input type="number" id="volumes" placeholder="Quantidade de volumes">
+
   <button onclick="registrarNota()">Registrar Nota</button>
   <p id="msg"></p>
 </div>
@@ -34,17 +40,39 @@
       placeholder="Número da nota"
     />
 
-    <button onclick="buscarNota()">
+    <button type="button" onclick="buscarNota()">
       Pesquisar
     </button>
   </div>
 
-  <div id="resultado" class="resultado"></div>
+  <!-- ⚠️ ISSO É O QUE ESTAVA FALTANDO -->
+  <div id="resultadoBusca" class="resultado"></div>
 </section>
 
+<div class="search-section">
+  <h2>Filtrar Notas</h2>
+
+  <div class="search-form">
+<input type="text" id="usuarioFiltro" placeholder="Usuário">
+
+<input type="date" id="dataInicio">
+<input type="date" id="dataFim">
+
+<button onclick="filtrarNotas()">Filtrar</button>
+
+<div id="resultado"></div>
+
+<button onclick="baixarCSV()">Baixar CSV</button>
 
 <div id="resultado" class="resultado"></div>
 
   <script src="script.js"></script>
+
+<script>
+  if (!localStorage.getItem("usuario")) {
+    window.location.href = "login.html";
+  }
+</script>
+
 </body>
 </html>

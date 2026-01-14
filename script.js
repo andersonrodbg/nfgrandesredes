@@ -1,87 +1,181 @@
-const usuario = localStorage.getItem("usuarioLogado");
+// ===============================
+// 🔗 URL DA API
+// ===============================
+const URL_API = "https://script.google.com/macros/s/AKfycbzsHDX_PczWtTMKSHuzvi3qZ9w_bUXeMQ6erFbKfccxBsberTrMzfWK5IArJBVg4SkOww/exec";
 
-if (!usuario) {
-  window.location.href = "login.html";
-}
-
-const API_URL = "https://script.google.com/macros/s/AKfycbzpXOu4KBjYGepFPv0aDVe0Sc48RH2941jDVDF3xfA_L5l6RnbHpITeTqjoAflwb3lHvA/exec";
-
-function registrarNota() {
+// ===============================
+// 📌 REGISTRAR NOTA
+// ===============================
+async function registrarNota() {
   const usuario = document.getElementById("usuario").value.trim();
-  const dataFat = document.getElementById("dataFaturamento").value;
+  const dataFaturamento = document.getElementById("dataFaturamento").value;
   const nota = document.getElementById("nota").value.trim();
+  const volumes = document.getElementById("volumes").value.trim();
   const msg = document.getElementById("msg");
 
-  if (!usuario || !dataFat || !nota) {
-    msg.innerText = "Preencha todos os campos!";
-    msg.style.color = "red";
-    return;
-  }
-
-  fetch(API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: `nota=${nota}&usuario=${usuario}&dataFaturamento=${dataFat}`
-  })
-    .then(res => res.text())
-    .then(text => {
-      const data = JSON.parse(text);
-      msg.innerText = data.msg;
-      msg.style.color = data.status === "ok" ? "green" : "red";
-    })
-    .catch(err => {
-      msg.innerText = "Erro ao enviar";
-      msg.style.color = "red";
-      console.error(err);
-    });
+if (!usuario || !dataFaturamento || !nota || !volumes) {
+  msg.innerText = "Preencha todos os campos";
+  msg.style.color = "red";
+  return;
 }
 
-function buscarNota() {
+  const form = new FormData();
+  form.append("usuario", usuario);
+  form.append("dataFaturamento", dataFaturamento);
+  form.append("nota", nota);
+  form.append("volumes", volumes);
+
+
+  try {
+    const res = await fetch(URL_API, {
+      method: "POST",
+      body: form
+    });
+
+    const json = await res.json();
+    msg.innerText = json.msg;
+    msg.style.color = json.status === "ok" ? "green" : "red";
+
+    if (json.status === "ok") {
+      document.getElementById("nota").value = "";
+    }
+  } catch {
+    msg.innerText = "Erro ao registrar nota";
+    msg.style.color = "red";
+  }
+}
+
+// ===============================
+// 🔍 BUSCAR NOTA
+// ===============================
+async function buscarNota() {
   const nota = document.getElementById("notaBusca").value.trim();
-  const resultado = document.getElementById("resultado");
+  const resultado = document.getElementById("resultadoBusca");
 
   if (!nota) {
-    resultado.innerHTML = "<p class='erro'>Digite uma nota</p>";
+    resultado.innerHTML = "<p class='erro'>Informe o número da nota</p>";
     return;
   }
 
-  resultado.innerHTML = "<p>Buscando...</p>";
+  resultado.innerHTML = "Buscando...";
 
-  fetch(`${API_URL}?nota=${encodeURIComponent(nota)}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log("RETORNO API:", data); // 🔍 DEBUG
+  try {
+    const res = await fetch(`${URL_API}?nota=${encodeURIComponent(nota)}`);
+    const json = await res.json();
 
-      if (data.status !== "ok") {
-        resultado.innerHTML = `<p class='erro'>${data.msg}</p>`;
-        return;
-      }
+    if (json.status !== "ok") {
+      resultado.innerHTML = `<p class='erro'>${json.msg}</p>`;
+      return;
+    }
 
-      resultado.innerHTML = `
+    resultado.innerHTML = `
+      <div class="card">
+        <p><strong>Nota:</strong> ${json.nota}</p>
+        <p><strong>Usuário:</strong> ${json.usuario}</p>
+        <p><strong>Data Faturamento:</strong> ${formatarData(json.dataFaturamento)}</p>
+        <p><strong>Registrado em:</strong> ${formatarDataHora(json.dataRegistro)}</p>
+        <p><strong>Volumes:</strong> ${json.volumes}</p>
+
+      </div>
+    `;
+  } catch {
+    resultado.innerHTML = "<p class='erro'>Erro ao buscar nota</p>";
+  }
+}
+
+// ===============================
+// 📊 FILTRAR NOTAS
+// ===============================
+async function filtrarNotas() {
+  const usuario = document.getElementById("usuarioFiltro").value.trim();
+  const inicio = document.getElementById("dataInicio").value;
+  const fim = document.getElementById("dataFim").value;
+  const resultado = document.getElementById("resultado");
+
+  resultado.innerHTML = "Buscando...";
+
+  if (!usuario || !inicio || !fim) {
+    resultado.innerHTML = "<p class='erro'>Preencha todos os filtros</p>";
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${URL_API}?acao=filtrar&usuario=${usuario}&inicio=${inicio}&fim=${fim}`
+    );
+
+    const json = await res.json();
+
+    if (json.status !== "ok" || !json.dados.length) {
+      resultado.innerHTML = "<p class='erro'>Nenhuma nota encontrada</p>";
+      window.dadosFiltrados = []; // 🔴 importante
+      return;
+    }
+
+    const dados = json.dados;
+
+    // 🔥 SALVA GLOBALMENTE PARA DOWNLOAD
+    window.dadosFiltrados = dados;
+
+    let totalVolumes = 0;
+    resultado.innerHTML = "";
+
+    dados.forEach(n => {
+      totalVolumes += Number(n.volumes || 0);
+
+      resultado.innerHTML += `
         <div class="card">
-          <p><strong>Nota:</strong> ${data.nota}</p>
-          <p><strong>Usuário:</strong> ${data.usuario}</p>
-          <p><strong>Data de faturamento:</strong> ${formatarData(data.dataFaturamento)}</p>
-          <p><strong>Registrado em:</strong> ${formatarDataHora(data.dataRegistro)}</p>
+          <p><strong>Nota:</strong> ${n.nota}</p>
+          <p><strong>Usuário:</strong> ${n.usuario}</p>
+          <p><strong>Data Faturamento:</strong> ${n.dataFaturamento}</p>
+          <p><strong>Volumes:</strong> ${n.volumes}</p>
         </div>
       `;
-    })
-    .catch(err => {
-      console.error("ERRO FETCH:", err);
-      resultado.innerHTML = "<p class='erro'>Erro ao buscar a nota</p>";
     });
+
+    resultado.innerHTML += `
+      <div class="total-volumes">
+        <h3>${usuario} — Total de volumes: ${totalVolumes}</h3>
+      </div>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    resultado.innerHTML = "<p class='erro'>Erro ao buscar dados</p>";
+    window.dadosFiltrados = [];
+  }
 }
 
 
-function formatarData(data) {
-  const d = new Date(data);
-  return d.toLocaleDateString("pt-BR");
-}
+// ===============================
+// 📥 DOWNLOAD CSV
+// ===============================
+function baixarCSV() {
+  if (!window.dadosFiltrados || window.dadosFiltrados.length === 0) {
+    alert("Não há dados filtrados para baixar");
+    return;
+  }
 
-function formatarDataHora(data) {
-  const d = new Date(data);
-  return d.toLocaleString("pt-BR");
-}
+  let csv = "Nota,Usuário,Data Faturamento,Volumes\n";
+  let totalVolumes = 0;
 
+  window.dadosFiltrados.forEach(n => {
+    const volumes = Number(n.volumes || 0);
+    totalVolumes += volumes;
+
+    csv += `${n.nota},${n.usuario},${n.dataFaturamento},${volumes}\n`;
+  });
+
+  // 🔥 LINHA FINAL COM TOTAL
+  csv += `\nTOTAL DE VOLUMES,,,"${totalVolumes}"`;
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "notas_filtradas_com_total.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
