@@ -58,19 +58,28 @@ if (!usuario || !dataFaturamento || !nota || !volumes) {
 // 🔍 BUSCAR NOTA
 // ===============================
 async function buscarNota() {
-  const nota = document.getElementById("notaBusca").value.trim();
+  const notaInput = document.getElementById("notaBusca");
   const resultado = document.getElementById("resultadoBusca");
+
+  if (!notaInput || !resultado) {
+    console.error("Elemento notaBusca ou resultadoBusca não encontrado");
+    return;
+  }
+
+  const nota = notaInput.value.trim();
 
   if (!nota) {
     resultado.innerHTML = "<p class='erro'>Informe o número da nota</p>";
     return;
   }
 
-  resultado.innerHTML = "Buscando...";
+  resultado.innerHTML = "Buscando nota...";
 
   try {
     const res = await fetch(`${URL_API}?nota=${encodeURIComponent(nota)}`);
     const json = await res.json();
+
+    console.log("Resposta buscar nota:", json);
 
     if (json.status !== "ok") {
       resultado.innerHTML = `<p class='erro'>${json.msg}</p>`;
@@ -81,13 +90,14 @@ async function buscarNota() {
       <div class="card">
         <p><strong>Nota:</strong> ${json.nota}</p>
         <p><strong>Usuário:</strong> ${json.usuario}</p>
-        <p><strong>Data Faturamento:</strong> ${formatarData(json.dataFaturamento)}</p>
-        <p><strong>Registrado em:</strong> ${formatarDataHora(json.dataRegistro)}</p>
-        <p><strong>Volumes:</strong> ${json.volumes}</p>
-
+        <p><strong>Data Faturamento:</strong> ${json.dataFaturamento}</p>
+        <p><strong>Data Registro:</strong> ${json.dataRegistro}</p>
+        ${json.volumes !== undefined ? `<p><strong>Volumes:</strong> ${json.volumes}</p>` : ""}
       </div>
     `;
-  } catch {
+
+  } catch (err) {
+    console.error("Erro ao buscar nota:", err);
     resultado.innerHTML = "<p class='erro'>Erro ao buscar nota</p>";
   }
 }
