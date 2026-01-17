@@ -45,29 +45,25 @@
     </button>
   </div>
 
-  <!-- ⚠️ ISSO É O QUE ESTAVA FALTANDO -->
+  <!--  ISSO É O QUE ESTAVA FALTANDO -->
   <div id="resultadoBusca" class="resultado"></div>
 </section>
 
-<div class="search-section">
+<section class="search-section">
   <h2>Filtrar Notas</h2>
 
-  <div class="search-form">
-<input type="text" id="usuarioFiltro" placeholder="Usuário">
+  <div class="filtro-linha">
+    <input type="text" id="usuarioFiltro" placeholder="Usuário">
 
-<input type="date" id="dataInicio">
-<input type="date" id="dataFim">
+    <input type="date" id="dataInicio">
+    <input type="date" id="dataFim">
 
-<button onclick="filtrarNotas()">Filtrar</button>
+    <button onclick="filtrarNotas()">Filtrar</button>
+    <button class="csv" onclick="baixarCSV()">Baixar CSV</button>
+  </div>
 
-<div id="resultado"></div>
-
-<button onclick="baixarCSV()">Baixar CSV</button>
-
-<div id="resultado" class="resultado"></div>
-
-
-
+  <div id="resultado" class="resultado"></div>
+</section>
 
 
 </body>
